@@ -7,10 +7,8 @@ from json_processor import (is_patient_at_least_40, dates_valid,
                             remove_sensitive_data, values_length_valid)
 from txt_processor import (calculate_per_sequence, most_common_codon,
                            lcs, build_txt_output)
-
-# validate input file
-# process txt file -> return dict
-# merge all into one json file
+from valid_input import (valid_input_format, valid_context_path, valid_results_path,
+                         valid_context_files, valid_file_names)
 
 
 def utc_now_iso() -> str:
@@ -35,13 +33,12 @@ def open_input_file(input_file_path: str) -> Tuple[Path, Path, Path, Path, str]:
 
     # find json and txt files
     json_file_path = next(context_path.glob("*.json")).resolve()
-    txt_file_path  = next(context_path.glob("*.txt")).resolve()
+    txt_file_path = next(context_path.glob("*.txt")).resolve()
 
     # derive participant_id from JSON filename, e.g. "IND123456_dna.json" -> "IND123456"
     stem = json_file_path.stem
     participant_id = stem[:-4] if stem.endswith("_dna") else stem
 
-    # TODO: add input format validation
     # return absolute paths
     return context_path, json_file_path, txt_file_path, results_path, participant_id
 
@@ -133,17 +130,47 @@ if __name__ == "__main__":
     # save start time
     start_time = utc_now_iso()
 
+    # INPUT VALIDATION
+
+    # check command line args
     if len(sys.argv) != 2:
         print("Usage: python ETL.py <input.json>")
         sys.exit(2)
+    # open input file
+    with open(sys.argv[1], "r", encoding="utf-8") as in_file:
+        in_data = json.load(in_file)
+    # validate input format
+    if not valid_input_format(in_data):
+        print("Input format error: expected keys 'context_path' and 'results_path' as non-empty strings.")
+        sys.exit(2)
+    # validate context path (exists, is dir)
+    if not valid_context_path(in_data):
+        print("Input validation error: 'context_path' must be an existing directory.")
+        sys.exit(2)
+    # validate results path (only that it's a valid path, not that it exists)
+    if not valid_results_path(in_data):
+        print("Input validation error: 'results_path' must be a directory (existing or creatable).")
+        sys.exit(2)
+    # validate files inside context path
+    if not valid_context_files(in_data):
+        print("Input validation error: "
+              "context_path must contain exactly two files: "
+              "one .json and one .txt (no other files).")
+        sys.exit(2)
+    # validate filenames
+    if not valid_file_names(in_data):
+        print("Input validation error: "
+              "the two files in context_path must share the same base filename (participant id).")
+        sys.exit(2)
 
-    context_path, json_path, txt_path, result_path, participant_id = open_input_file(sys.argv[1])
+    # OPEN FILES AND EXTRACT DATA
+    in_context_path, in_json_path, txt_path, result_path, in_participant_id = open_input_file(sys.argv[1])
 
     # JSON PROCESSING:
 
-    metadata_to_process = extract_json_data(json_path)
+    metadata_to_process = extract_json_data(in_json_path)
 
-    # validations
+    # json validations
     if not is_patient_at_least_40(metadata_to_process):
         print(f"Validation error: participant must be at least 40 years old.")
         sys.exit(1)
@@ -157,7 +184,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     # remove sensitive data
-    json_block = remove_sensitive_data(metadata_to_process)
+    json_block_out = remove_sensitive_data(metadata_to_process)
 
     # TXT PROCESSING:
 
@@ -173,23 +200,21 @@ if __name__ == "__main__":
     lcs_result = lcs(seq_lst)
 
     # combine TXT results into the expected JSON structure
-    txt_block = build_txt_output(per_sequence_results, common_codon, lcs_result)
+    txt_block_out = build_txt_output(per_sequence_results, common_codon, lcs_result)
 
     # BUILD OUTPUT
 
     # build results block
-    result_block = build_results_block(participant_id, json_block, txt_block)
+    result_block = build_results_block(in_participant_id, json_block_out, txt_block_out)
 
     # save end time
     end_time = utc_now_iso()
 
     # build metadata block
-    metadata_block = build_metadata_block(context_path, result_path, start_time, end_time)
+    metadata_block_out = build_metadata_block(in_context_path, result_path, start_time, end_time)
 
     # combine all blocks into the final output structure
-    final_output = build_final_output(metadata_block, [result_block])
+    final_output_out = build_final_output(metadata_block_out, [result_block])
 
     # write output file
-    write_output(result_path, participant_id, final_output)
-
-
+    output_path = write_output(result_path, in_participant_id, final_output_out)

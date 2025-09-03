@@ -48,7 +48,7 @@ def remove_sensitive_data(metadata: Dict[str, Any]) -> Dict[str, Any]:
     specifically, every field which starts with "_" recursively.
     Returns a NEW dict
     :param metadata: Dictionary containing patient metadata
-    :return: Metadata dictionary with sensitive fields removed
+    :return: dictionary of the metadata without sensitive fields
     """
     def _clean(obj: JSONVal) -> JSONVal:
         # If it's a dict: drop keys starting with "_" and clean values recursively
