@@ -1,45 +1,35 @@
 import json
-import os
-import json_processor
-from typing import Tuple
+import sys
+from json_processor import (is_patient_at_least_40, dates_valid,
+                            remove_sensitive_data, values_length_valid)
+from typing import Tuple, List
 from pathlib import Path
 
-
-
 # validate input file
-# get path to json file
-# get path to txt file
-# proccess json file -> return dict
 # process txt file -> return dict
 # merge all into one json file
 
 
-def open_input_file(input_file_path: str) -> Tuple[Path, Path]:
+def open_input_file(input_file_path: str) -> Tuple[Path, Path, Path]:
     """
-    Opens the input JSON file, reads context_path
-    finds the patient's json and txt files inside that directory.
+    Opens the input JSON file, reads context_path and results_path,
+    finds the patient's json and txt files inside the context_path.
     :param input_file_path: Path to the input.json file
-    :return: (json_file_path, txt_file_path)
+    :return: (json_file_path, txt_file_path, results_path) as Paths (absolute)
     """
     # load input file
     with open(input_file_path, "r", encoding="utf-8") as input_file:
         input_data = json.load(input_file)
 
-    context_path = input_data["context_path"]
-    # TODO: error handling
+    context_path = Path(input_data["context_path"]).resolve()
+    results_path = Path(input_data["results_path"]).resolve()
 
     # find json and txt files
-    p = Path(context_path)
-    json_file_path = next((fp for fp in p.glob("*.json")))
-    txt_file_path = next((fp for fp in p.glob("*.txt")))
-    """
-    json_file_path = next((str(fp) for fp in p.glob("*.json")), None)
-    txt_file_path  = next((str(fp) for fp in p.glob("*.txt")), None)
-    if json_file_path is None or txt_file_path is None:
-        raise FileNotFoundError("Could not find both JSON and TXT files in the specified context path.")
-    """
+    json_file_path = next(context_path.glob("*.json")).resolve()
+    txt_file_path  = next(context_path.glob("*.txt")).resolve()
+    # TODO: add input format validation
     # return absolute paths
-    return json_file_path, txt_file_path
+    return json_file_path, txt_file_path, results_path
 
 
 def extract_json_data(json_file_path: Path) -> dict:
@@ -53,12 +43,50 @@ def extract_json_data(json_file_path: Path) -> dict:
     return metadata
 
 
-if __name__ == "__main__":
-    # open input file
-    json_path, txt_path = open_input_file("C:/Users/adipa/DNA_ETL/src/data/input_exmpl.json")
-    print(f"JSON: {json_path.resolve()}")  # TODO: remove
-    print(f"TXT:  {txt_path.resolve()}")  # TODO: remove
+def extract_txt_sequences(txt_file_path: Path) -> List[str]:
+    """
+    Read the DNA TXT file and returns all non-empty lines as strings.
+    :param txt_file_path: Path to the TXT file
+    :return: List of non-empty lines from the TXT file
+    """
+    sequences_lst = []
 
+    with txt_file_path.open("r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            sequences_lst.append(line)
+    return sequences_lst
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python ETL.py <input.json>")
+        sys.exit(2)
+
+    json_path, txt_path, results_path = open_input_file(sys.argv[1])
+
+    # json processing:
     metadata_to_process = extract_json_data(json_path)
-    print(metadata_to_process)  # TODO: remove
-    print(json_processor.is_patient_at_least_40(metadata_to_process))  # TODO: remove
+
+    # validations
+    if not is_patient_at_least_40(metadata_to_process):
+        print(f"Validation error: participant must be at least 40 years old.")
+        sys.exit(1)
+
+    if not dates_valid(metadata_to_process):
+        print("Validation error: one or more dates are out of the allowed range [2014-01-01..2024-12-31].")
+        sys.exit(1)
+
+    if not values_length_valid(metadata_to_process):
+        print("Validation error: one or more string values exceed 64 characters.")
+        sys.exit(1)
+
+    # remove sensitive data
+    metadata_to_return = remove_sensitive_data(metadata_to_process)
+
+
+    # txt processing:
+
+
