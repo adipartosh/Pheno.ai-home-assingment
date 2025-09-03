@@ -1,9 +1,11 @@
 import json
 import sys
-from json_processor import (is_patient_at_least_40, dates_valid,
-                            remove_sensitive_data, values_length_valid)
 from typing import Tuple, List
 from pathlib import Path
+from json_processor import (is_patient_at_least_40, dates_valid,
+                            remove_sensitive_data, values_length_valid)
+from txt_processor import (calculate_per_sequence, most_common_codon,
+                           lcs, build_txt_output)
 
 # validate input file
 # process txt file -> return dict
@@ -56,7 +58,7 @@ def extract_txt_sequences(txt_file_path: Path) -> List[str]:
             line = line.strip()
             if not line:
                 continue
-            sequences_lst.append(line)
+            sequences_lst.append(line.upper())
     return sequences_lst
 
 
@@ -65,7 +67,7 @@ if __name__ == "__main__":
         print("Usage: python ETL.py <input.json>")
         sys.exit(2)
 
-    json_path, txt_path, results_path = open_input_file(sys.argv[1])
+    json_path, txt_path, result_path = open_input_file(sys.argv[1])
 
     # json processing:
     metadata_to_process = extract_json_data(json_path)
@@ -84,9 +86,22 @@ if __name__ == "__main__":
         sys.exit(1)
 
     # remove sensitive data
-    metadata_to_return = remove_sensitive_data(metadata_to_process)
-
+    json_block = remove_sensitive_data(metadata_to_process)
 
     # txt processing:
+    seq_lst = extract_txt_sequences(txt_path)
+
+    # calculate GC% and codon frequencies per sequence
+    per_sequence_results = calculate_per_sequence(seq_lst)
+    # find most common codon(s)
+    common_codon = most_common_codon(per_sequence_results)
+    # find LCS (value, length, indexes)
+    lcs_result = lcs(seq_lst)
+    # combine TXT results into the expected JSON structure
+    txt_block = build_txt_output(per_sequence_results, common_codon, lcs_result)
+
+    print(json.dumps(json_block, indent=2, ensure_ascii=False))  # TODO: remove
+    print(json.dumps(txt_block, indent=2, ensure_ascii=False))  # TODO: remove
+
 
 

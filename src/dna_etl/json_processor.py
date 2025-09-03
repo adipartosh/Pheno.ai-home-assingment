@@ -2,6 +2,8 @@ from datetime import date
 from typing import Any, Dict, List, Union, cast
 
 MAX_VALUE_LEN = 64
+# ALL FUNCTIONS WORKING ON DICT (THAT WAS PARSED FROM JSON)
+
 
 def is_patient_at_least_40(metadata: Dict[str, Any]) -> bool:
     """
@@ -9,7 +11,7 @@ def is_patient_at_least_40(metadata: Dict[str, Any]) -> bool:
     :param metadata: Dictionary containing patient metadata
     :return: True if the patient is at least 40 years old, False otherwise
     """
-    # extract birth date
+    # extract birthdate
     birth_date_str = metadata["individual_metadata"]["date_of_birth"]
     birth_date = date.fromisoformat(birth_date_str)
     today = date.today()
