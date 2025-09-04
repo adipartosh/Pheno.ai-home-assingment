@@ -1,0 +1,52 @@
+{
+  "test_metadata": {
+    "test_id": "DNA123456",
+    "test_type": "Genetic Analysis",
+    "date_requested": "2024-12-01",
+    "date_completed": "2024-12-10",
+    "status": "Completed",
+    "laboratory_info": {
+      "name": "Genomics Lab Inc.",
+      "certification": "CLIA Certified"
+    }
+  },
+  "sample_metadata": {
+    "sample_id": "SAMP987654",
+    "sample_type": "Saliva",
+    "collection_date": "2024-12-01",
+    "data_file": "some/imaginary/path/to/datafile"
+  },
+  "analysis_metadata": {
+    "platform": "Illumina NovaSeq 6000",
+    "methodology": "Whole Genome Sequencing",
+    "coverage": "30x",
+    "reference_genome": "GRCh38",
+    "variants_detected": {
+      "total": 5000,
+      "pathogenic": 15,
+      "likely_pathogenic": 8,
+      "benign": 4977
+    }
+  },
+  "individual_metadata": {
+    "_individual_id": "IND123456",
+    "_name": "John Smith",
+    "date_of_birth": "1985-05-15",
+    "gender": "Male",
+    "ethnicity": "Caucasian",
+    "family_history": {
+      "diseases": [
+        {
+          "name": "Breast Cancer",
+          "relation": "Mother",
+          "age_at_diagnosis": 50
+        },
+        {
+          "name": "Type 2 Diabetes",
+          "relation": "Father",
+          "age_at_diagnosis": 55
+        }
+      ]
+    }
+  }
+}
