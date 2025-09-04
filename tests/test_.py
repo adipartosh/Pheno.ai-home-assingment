@@ -1,4 +1,5 @@
 # tests/test_pipeline.py
+import pytest
 import sys
 import json
 from pathlib import Path
@@ -6,8 +7,8 @@ from typing import Dict, Any, List
 
 sys.path.append(str(Path(__file__).resolve().parents[1] / "src"))
 
-import pytest
 
+# --- Imports from the package under test ---
 from dna_etl.valid_input import (
     valid_input_format,
     valid_context_path,
@@ -42,7 +43,7 @@ write_output = pytest.importorskip("dna_etl.ETL", reason="write_output not found
 
 
 # ------------------------------
-# Helpers
+# Helpers to build sample inputs
 # ------------------------------
 
 def make_sample_metadata(valid_dates: bool = True, long_string: bool = False) -> Dict[str, Any]:
@@ -279,7 +280,7 @@ def test_build_txt_output_shape():
 
 
 # ------------------------------
-# ETL assembly tests (non-CLI)
+# ETL assembly tests
 # ------------------------------
 
 def test_open_input_file_extracts_paths_and_id(tmp_path: Path):

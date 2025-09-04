@@ -37,4 +37,4 @@ secrets.*
 
 # Local data 
 data/
-src/data/
+data/
