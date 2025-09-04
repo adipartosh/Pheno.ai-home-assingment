@@ -10,18 +10,18 @@ Adi Partosh
 
 A small ETL in Python that merges a participant’s DNA test data from two files:
 
-* `{uuid}_dna.json` — test & individual metadata
-* `{uuid}_dna.txt` — DNA sequences (one per line)
+* `{uuid}_dna.json` - test & individual metadata
+* `{uuid}_dna.txt` - DNA sequences (one per line)
 
 The tool validates the JSON, extracts features from the TXT, and writes **one** merged output JSON per participant.
 
 ## Main Modules
 
-* **ETL.py** – Orchestrates the run: parse args, validate paths, time the run, merge, write.
-* **json\_processor.py** – Removes sensitive fields (`_`-prefixed), enforces string-length < 64, checks **age ≥ 40**, and that dates are within **2014–2024** (inclusive).
-* **txt\_processor.py** – Per-sequence GC% and codon frequencies; global most-common codon; **Longest Common Substring (LCS)** across sequence pairs.
-* **valid\_input.py** – Verifies the runner JSON, filesystem layout, and matching `{uuid}_dna` pair.
-* **tests/** – Optional pytest suite.
+* **ETL.py** - Orchestrates the run: parse args, validate paths, time the run, merge, write.
+* **json\_processor.py** - Removes sensitive fields (`_`-prefixed), enforces string-length < 64, checks **age ≥ 40**, and that dates are within **2014–2024** (inclusive).
+* **txt\_processor.py** - Per-sequence GC% and codon frequencies; global most-common codon; **Longest Common Substring (LCS)** across sequence pairs.
+* **valid\_input.py** - Verifies the runner JSON, filesystem layout, and matching `{uuid}_dna` pair.
+* **tests/** - Optional pytest suite.
 
 ## Data Model
 
@@ -61,10 +61,10 @@ Written to `results_path` as `<uuid>.json`:
 
 ## Algorithms (TXT)
 
-* **GC content** – Percent of `G` or `C` in a sequence (two decimals).
-* **Codon frequency** – Non-overlapping triplets from the **start**; drop trailing 1–2 bases.
-* **Most common codon** – Aggregated across all sequences; **tie-break lexicographically**.
-* **LCS** – Longest common **substring** among any pair of sequences.
+* **GC content** - Percent of `G` or `C` in a sequence (two decimals).
+* **Codon frequency** - Non-overlapping triplets from the **start**; drop trailing 1–2 bases.
+* **Most common codon** - Aggregated across all sequences; **tie-break lexicographically**.
+* **LCS** - Longest common **substring** among any pair of sequences.
   Output includes: `value`, `sequences` (1-based indices), and `length`.
   Tie-breaks: longer > lexicographically smaller > lowest index pair.
 
