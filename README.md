@@ -1,5 +1,3 @@
-# README.md
-
 # DNA\_ETL
 
 ## Authors
