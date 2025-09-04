@@ -1,5 +1,3 @@
-"# DNA_ETL project" 
-
 # README.md
 
 # DNA\_ETL
