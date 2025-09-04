@@ -3,11 +3,11 @@ import sys
 from typing import Tuple, List, Dict, Any
 from pathlib import Path
 from datetime import datetime, timezone
-from .json_processor import (is_patient_at_least_40, dates_valid,
+from json_processor import (is_patient_at_least_40, dates_valid,
                             remove_sensitive_data, values_length_valid)
-from .txt_processor import (calculate_per_sequence, most_common_codon,
+from txt_processor import (calculate_per_sequence, most_common_codon,
                            lcs, build_txt_output)
-from .valid_input import (valid_input_format, valid_context_path, valid_results_path,
+from valid_input import (valid_input_format, valid_context_path, valid_results_path,
                          valid_context_files, valid_file_names)
 
 
